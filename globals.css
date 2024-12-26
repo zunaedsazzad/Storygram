@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "~slick-carousel/slick/slick.css";
+@import "~slick-carousel/slick/slick-theme.css";
+
+/* Custom styles for the slider */
+.slick-slider {
+  margin: 0 auto; /* Center the slider */
+  width: 80%; /* Adjust width */
+}
+
+.slick-slide img {
+  border-radius: 10px; /* Rounded corners for images */
+  max-height: 400px; /* Restrict image height */
+  object-fit: cover; /* Ensure images maintain aspect ratio */
+}
+
+.slick-dots li button:before {
+  color: #3498db; /* Dot color */
+  font-size: 12px; /* Dot size */
+}
+
+.slick-dots li.slick-active button:before {
+  color: #2ecc71; /* Active dot color */
+}
+
+.slick-prev:before, 
+.slick-next:before {
+  color: #3498db; /* Arrow color */
+}
+
+/* Optionally add the new keyframes if necessary */
+@keyframes scroll-left {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes glow {
+  0% {
+    text-shadow: 0 0 10px #8e44ad, 0 0 20px #3498db, 0 0 30px #8e44ad;
+  }
+  50% {
+    text-shadow: 0 0 20px #3498db, 0 0 40px #8e44ad, 0 0 60px #3498db;
+  }
+  100% {
+    text-shadow: 0 0 10px #8e44ad, 0 0 20px #3498db, 0 0 30px #8e44ad;
+  }
+}
+
+
+/* Glowing text animation */
+.animate-text-glow {
+  animation: text-glow 2s infinite alternate;
+}
+
+@keyframes text-glow {
+  0% {
+    text-shadow: 0 0 10px #ffd700, 0 0 20px #ff8c00, 0 0 30px #ff4500;
+  }
+  100% {
+    text-shadow: 0 0 20px #ff4500, 0 0 30px #ff6347, 0 0 40px #ff8c00;
+  }
+}
+
+/* Fireworks animation */
+.firework {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle, #ffd700 40%, transparent 60%);
+  border-radius: 50%;
+  animation: burst 1.5s infinite ease-in-out;
+}
+
+.firework-1 {
+  top: 20%;
+  left: 30%;
+  animation-delay: 0s;
+}
+
+.firework-2 {
+  top: 40%;
+  right: 40%;
+  animation-delay: 0.5s;
+}
+
+.firework-3 {
+  top: 60%;
+  left: 50%;
+  animation-delay: 1s;
+}
+
+@keyframes burst {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+

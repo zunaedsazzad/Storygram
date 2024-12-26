@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+	font-family: "grand-bageur";
+	src: url("/fonts/grand-bageur.otf") format("opentype");
+	font-weight: normal;
+	font-style: normal;
+}
+@font-face {
+	font-family: "rogan";
+	src: url("/fonts/Rogan-Bold-BF654c4a94709f5.otf") format("opentype");
+	font-weight: 700;
+	font-style: normal;
+}
+@font-face {
+	font-family: "rogan";
+	src: url("/fonts/Rogan-SemiBold-BF654c4a94a3244.otf") format("opentype");
+	font-weight: 600;
+	font-style: normal;
+}
+@font-face {
+	font-family: "rogan";
+	src: url("/fonts/Rogan-Regular-BF654c4a9481d1b.otf") format("opentype");
+	font-weight: 400;
+	font-style: normal;
+}
+@font-face {
+	font-family: "rogan";
+	src: url("/fonts/Rogan-Thin-BF654c4a949df4e.otf") format("opentype");
+	font-weight: 300;
+	font-style: normal;
+}
+
+.container-class {
+	overflow: scroll;
+	scrollbar-width: none; /* For Firefox */
+	-ms-overflow-style: none; /* For Internet Explorer 10+ */
+}
+
+.container-class::-webkit-scrollbar {
+	display: none; /* For Chrome, Safari, and Opera */
+}

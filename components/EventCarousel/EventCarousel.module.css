@@ -1,0 +1,48 @@
+/* EventCarousel.module.css */
+
+/* Container to make the carousel responsive */
+.sliderContainer {
+  max-width: 1200px;  /* Maximum width for the slider */
+  margin: 0 auto;     /* Centers the carousel container */
+  padding: 20px;      /* Optional padding around the carousel */
+  width: 80%;         /* Centers the slider and limits its width */
+}
+
+/* Styles for the carousel images */
+.image {
+  width: 100%;        /* Makes the image take the full width of its container */
+  height: 300px;      /* Fixed height for uniformity */
+  object-fit: cover;  /* Ensures the image fills the space without distortion */
+  border-radius: 10px; /* Adds rounded corners to the image */
+  transition: transform 0.3s ease; /* Smooth zoom effect on hover */
+}
+
+/* Hover effect for images */
+.image:hover {
+  transform: scale(1.05); /* Zoom-in effect on hover */
+}
+
+/* Navigation arrows styling */
+.slick-prev, .slick-next {
+  color: #fff; /* White arrows */
+}
+
+/* Dot navigation styling */
+.slick-dots {
+  bottom: 10px; /* Position the dots slightly lower */
+}
+
+.slick-dots li button:before {
+  color: #fff; /* Color of the navigation dots */
+}
+
+/* Responsive styling for smaller screens */
+@media (max-width: 768px) {
+  .image {
+    height: 200px; /* Reduced height for smaller screens */
+  }
+
+  .sliderContainer {
+    width: 100%; /* Ensures full width on smaller screens */
+  }
+}

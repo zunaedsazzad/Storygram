@@ -1,0 +1,23 @@
+.sliderContainer {
+    margin: 0 auto;
+    width: 80%;            /* Centers the slider and limits its width */
+    max-width: 1200px;     /* Maximum width for the slider */
+  }
+  
+  .image {
+    width: 100%;            /* Makes the image take the full width of its container */
+    height: 300px;          /* Fixes a uniform height for all images */
+    object-fit: cover;      /* Ensures the image fills the space without distortion */
+    border-radius: 10px;    /* Adds rounded corners to the image */
+  }
+  
+  @media (max-width: 768px) {
+    .image {
+      height: 200px;        /* Reduces the height for smaller screens */
+    }
+  
+    .sliderContainer {
+      width: 100%;         /* Ensures the slider takes full width on smaller screens */
+    }
+  }
+  

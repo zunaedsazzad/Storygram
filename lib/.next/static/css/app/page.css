@@ -1,0 +1,52 @@
+/*!*********************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[3]!./components/EventCarousel/EventCarousel.module.css ***!
+  \*********************************************************************************************************************************************************************************************************************************************************************************************/
+/* EventCarousel.module.css */
+
+/* Container to make the carousel responsive */
+.EventCarousel_sliderContainer__oPyFW {
+  max-width: 1200px;  /* Maximum width for the slider */
+  margin: 0 auto;     /* Centers the carousel container */
+  padding: 20px;      /* Optional padding around the carousel */
+  width: 80%;         /* Centers the slider and limits its width */
+}
+
+/* Styles for the carousel images */
+.EventCarousel_image__X3QTj {
+  width: 100%;        /* Makes the image take the full width of its container */
+  height: 300px;      /* Fixed height for uniformity */
+  object-fit: cover;  /* Ensures the image fills the space without distortion */
+  border-radius: 10px; /* Adds rounded corners to the image */
+  transition: transform 0.3s ease; /* Smooth zoom effect on hover */
+}
+
+/* Hover effect for images */
+.EventCarousel_image__X3QTj:hover {
+  transform: scale(1.05); /* Zoom-in effect on hover */
+}
+
+/* Navigation arrows styling */
+.EventCarousel_slick-prev__at0WT, .EventCarousel_slick-next__vs9tv {
+  color: #fff; /* White arrows */
+}
+
+/* Dot navigation styling */
+.EventCarousel_slick-dots__AfPw5 {
+  bottom: 10px; /* Position the dots slightly lower */
+}
+
+.EventCarousel_slick-dots__AfPw5 li button:before {
+  color: #fff; /* Color of the navigation dots */
+}
+
+/* Responsive styling for smaller screens */
+@media (max-width: 768px) {
+  .EventCarousel_image__X3QTj {
+    height: 200px; /* Reduced height for smaller screens */
+  }
+
+  .EventCarousel_sliderContainer__oPyFW {
+    width: 100%; /* Ensures full width on smaller screens */
+  }
+}
+
