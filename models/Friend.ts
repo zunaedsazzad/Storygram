@@ -1,6 +1,13 @@
-const mongoose = require('mongoose');
+import mongoose, { Schema, Document, Model } from 'mongoose';
 
-const friendSchema = new mongoose.Schema({
+interface IFriend extends Document {
+    friend_one: mongoose.Schema.Types.ObjectId;
+    friend_two: mongoose.Schema.Types.ObjectId;
+    who_requested: mongoose.Schema.Types.ObjectId;
+    is_requested: boolean;
+}
+
+const friendSchema: Schema = new Schema({
     friend_one: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
@@ -24,5 +31,5 @@ const friendSchema = new mongoose.Schema({
     timestamps: true
 });
 
-const Friend = mongoose.models.Friend || mongoose.model('Friend', friendSchema);
+const Friend: Model<IFriend> = mongoose.models.Friend || mongoose.model<IFriend>('Friend', friendSchema);
 export default Friend;

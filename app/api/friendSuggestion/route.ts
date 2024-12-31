@@ -1,62 +1,82 @@
-import { NextApiRequest, NextApiResponse } from 'next';
 import { NextResponse } from "next/server";
 import { connectToDB } from "@/lib/mongoDB";
 import User from "@/models/User";
+import Friend from "@/models/Friend";
 import { currentUser } from "@clerk/nextjs/server";
+import mongoose from "mongoose";
 
-const getFriendSuggestions = async (req: NextApiRequest, res: NextApiResponse) => {
+export const GET = async () => {
     try {
-        await connectToDB();
-        const clerk_user = await currentUser();
+        
+        connectToDB();
+        
 
-        if (!clerk_user) {
+        
+        const clerkUser = await currentUser();
+        
+        if (!clerkUser) {
             return NextResponse.json({ message: "Not signed in" }, { status: 401 });
         }
 
-        const { my_id } = req.body;
+        const currentUserId: string = clerkUser.id;
+        
 
-        if (!my_id) {
-            return res.status(400).json({ message: "User ID is required" });
+        
+        const dbUser = await User.findOne({ clerkId: currentUserId });
+        if (!dbUser) {
+            return NextResponse.json({ message: "User not found" }, { status: 404 });
         }
 
-        const user = await User.findOne({ clerkId: clerk_user.id });
-        const friendlist = db.collection('FriendsList');
-        const users = db.collection('Users');
+        
 
-        const friends = await friendlist.aggregate([
+        const userId = dbUser._id;
+
+        
+        const friends = await Friend.aggregate([
             {
                 $match: {
                     $or: [
-                        { friend_one: new ObjectId(my_id) },
-                        { friend_two: new ObjectId(my_id) },
+                        { friend_one: userId },
+                        { friend_two: userId },
                     ],
                 },
             },
             {
                 $project: {
-                    _id: 0,
                     friendId: {
                         $cond: [
-                            { $eq: ["$friend_one", new ObjectId(my_id)] },
+                            { $eq: ["$friend_one", userId] },
                             "$friend_two",
                             "$friend_one",
                         ],
                     },
                 },
             },
-        ]).toArray();
+        ]);
 
-        const friendIds = friends.map(friend => friend.friendId);
+        
+        const friendIds = friends.map((friend: { friendId: mongoose.Types.ObjectId }) => friend.friendId);
 
-        const suggestions = await users.find({
-            _id: { $nin: [new ObjectId(my_id), ...friendIds] },
-        }).project({ name: 1, area: 1, district: 1 }).toArray();
+        
+        const suggestedFriends = await User.aggregate([
+            {
+                $match: {
+                    _id: { $nin: [userId, ...friendIds] },
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    name: 1,
+                    area: 1,
+                    district: 1,
+                },
+            },
+        ]);
 
-        res.status(200).json(suggestions);
+        return NextResponse.json({ suggested_friends: suggestedFriends });
     } catch (error) {
-        console.error(error); // This will log the error details in the terminal
-        res.status(500).json({ message: "Server Error" });
+        console.error("Error fetching friend suggestions:", error);
+        return NextResponse.json({ message: "Server Error" }, { status: 500 });
     }
 };
-
-export default getFriendSuggestions;

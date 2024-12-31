@@ -29,7 +29,8 @@ export default function RootLayout({
 						>
 							<ToasterProvider />
 							<Nav />
-							{children}
+							<div className="bg-gradient-to-r from-slate-200 to-gray-600">{children}</div>
+							
 						</ThemeProvider>
 					</body>
 				</Suspense>
