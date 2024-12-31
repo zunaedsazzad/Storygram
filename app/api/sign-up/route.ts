@@ -3,8 +3,8 @@ import { connectToDB } from "@/lib/mongoDB";
 import User from "@/models/User";
 
 export const POST = async (req: Request) => {
-	const { email, password, name } = await req.json();
-	if (!email || !password || !name) {
+	const { email, password, name, address, division, district, age, role, genres } = await req.json();
+	if (!email || !password || !name || !address || !division || !age || !role || !genres) {
 		return NextResponse.json(
 			{ message: "Missing required fields" },
 			{ status: 400 }
@@ -20,9 +20,17 @@ export const POST = async (req: Request) => {
 		body: JSON.stringify({
 			email_address: [email],
 			password,
-			public_metadata: { role: "user"},
+			public_metadata: { role },
 		}),
 	});
+
+	if (!clerkResponse.ok) {
+		const errorData = await clerkResponse.json();
+		return NextResponse.json(
+			{ message: errorData.message || "Failed to create user with Clerk" },
+			{ status: clerkResponse.status }
+		);
+	}
 
 	const { id: clerkId } = await clerkResponse.json();
 
@@ -36,7 +44,7 @@ export const POST = async (req: Request) => {
 		);
 	}
 
-	const user = new User({ email, name, clerkId });
+	const user = new User({ email, name, address, division, district, age, role, genres, clerkId });
 	await user.save();
 
 	return NextResponse.json({ message: "User created" });
