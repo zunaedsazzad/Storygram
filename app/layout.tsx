@@ -3,6 +3,8 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ToasterProvider } from "@/components/Notification/ToasterProvider";
 import Nav from "@/app/(Nav)/Nav";
+import { Suspense } from "react";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 
 export const metadata: Metadata = {
 	title: "Storygram",
@@ -16,12 +18,22 @@ export default function RootLayout({
 }>) {
 	return (
 		<ClerkProvider dynamic>
-			<html lang="en">
-				<body className={`antialiased`}>
-					<ToasterProvider />
-					<Nav />
-					{children}
-				</body>
+			<html lang="en" suppressHydrationWarning>
+				<Suspense fallback={<div>Loading...</div>} >
+					<body className={`antialiased`}>
+						<ThemeProvider
+							attribute="class"
+							defaultTheme="system"
+							enableSystem
+							disableTransitionOnChange
+						>
+							<ToasterProvider />
+							<Nav />
+							<div className="bg-gradient-to-r from-slate-200 to-gray-600">{children}</div>
+							
+						</ThemeProvider>
+					</body>
+				</Suspense>
 			</html>
 		</ClerkProvider>
 	);
