@@ -64,36 +64,45 @@ type Card = {
 export function FocusCards({ cards }: { cards: any[] }) {
   const [hovered, setHovered] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBookId, setSelectedBookId] = useState<string | null>(null); // Track selected book ID
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const openModal = (bookId: string) => {
+      setSelectedBookId(bookId);
+      setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+      setIsModalOpen(false);
+      setSelectedBookId(null);
+  };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-5xl mx-auto md:px-8 w-full">
-      {cards.map((card, index) => (
-        <Card
-          key={index}
-          card={card}
-          index={index}
-          hovered={hovered}
-          setHovered={setHovered}
-          openModal={openModal}
-        />
-      ))}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-5xl mx-auto md:px-8 w-full">
+          {cards.map((card, index) => (
+              <Card
+                  key={index}
+                  card={card}
+                  index={index}
+                  hovered={hovered}
+                  setHovered={setHovered}
+                  openModal={() => openModal(card.id)} // Pass book ID to openModal
+              />
+          ))}
 
-      {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white dark:bg-neutral-800 p-6 rounded-lg shadow-lg relative">
-            <button
-              onClick={closeModal}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
-            >
-              &times;
-            </button>
-            <ModalReq isOpen={isModalOpen} onClose={closeModal} />
-          </div>
-        </div>
-      )}
-    </div>
+          {isModalOpen && (
+              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                  <div className="bg-white dark:bg-neutral-800 p-6 rounded-lg shadow-lg relative">
+                      <button
+                          onClick={closeModal}
+                          className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+                      >
+                          &times;
+                      </button>
+                      <ModalReq isOpen={isModalOpen} onClose={closeModal} bookId={selectedBookId} />
+                  </div>
+              </div>
+          )}
+      </div>
   );
 }
+
