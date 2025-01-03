@@ -1,11 +1,8 @@
 import mongoose from "mongoose";
 
-
-
 const userSchema = new mongoose.Schema({
 	photo: {
 		type: String,
-		
 	},
 	aboutMe: {
 		type: String,
@@ -28,7 +25,7 @@ const userSchema = new mongoose.Schema({
 	},
 	district: {
 		type: String,
-		required: true
+		required: true,
 	},
 	age: {
 		type: Number,
@@ -45,6 +42,11 @@ const userSchema = new mongoose.Schema({
 	clerkId: {
 		type: String,
 		required: false,
+	},
+	points: {
+		type: Number,
+		required: true,
+		default: 0,
 	},
 });
 

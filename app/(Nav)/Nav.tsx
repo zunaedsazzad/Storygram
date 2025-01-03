@@ -7,7 +7,6 @@ import { useState } from "react";
 import { SparklesCore } from "@/components/ui/sparkles";
 import { useTheme } from "next-themes";
 import { usePathname } from "next/navigation";
-import path from "path";
 
 function SparklesPreview() {
 	return (
@@ -41,17 +40,20 @@ function SparklesPreview() {
 
 export default function Nav() {
 	const { isSignedIn, signOut } = useAuth();
-	useUser();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const { theme, setTheme } = useTheme();
 	const pathname = usePathname();
+	const { user, isLoaded } = useUser();
 
 	return (
 		<nav className="bg-gray-800 text-white shadow-lg">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="flex items-center justify-between h-16">
-					<Link href="/" className="text-2xl font-bold hover:text-gray-400">
+					<Link
+						href="/"
+						className="text-2xl font-bold hover:text-gray-400"
+					>
 						<SparklesPreview />
 					</Link>
 					<div className="flex items-center space-x-4 md:hidden">
@@ -59,30 +61,81 @@ export default function Nav() {
 							onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
 							className="text-white focus:outline-none"
 						>
-							{mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+							{mobileMenuOpen ? (
+								<X className="w-6 h-6" />
+							) : (
+								<Menu className="w-6 h-6" />
+							)}
 						</button>
 					</div>
 					<div className="hidden md:flex space-x-6">
-						<Link href="/library" className="hover:text-gray-400 flex items-center">
+						<Link
+							href="/library"
+							className="hover:text-gray-400 flex items-center"
+						>
 							Library
 						</Link>
-						<Link href="/review" className="hover:text-gray-400 flex items-center">
+						<Link
+							href="/review"
+							className="hover:text-gray-400 flex items-center"
+						>
 							Review
 						</Link>
-						<Link href="/about" className="hover:text-gray-400 flex items-center">
-							Store
-						</Link>
+						{isLoaded && isSignedIn && (
+							<Link
+								href="/auction"
+								className="hover:text-gray-400 flex items-center"
+							>
+								Auction
+							</Link>
+						)}
+						{isLoaded &&
+							isSignedIn &&
+							user?.publicMetadata.role !== "Organization" && (
+								<Link
+									href="/club"
+									className="hover:text-gray-400 flex items-center"
+								>
+									Clubs
+								</Link>
+							)}
+						{isLoaded &&
+							isSignedIn &&
+							user?.publicMetadata.role !== "Organization" && (
+								<Link
+									href="/events"
+									className="hover:text-gray-400 flex items-center"
+								>
+									Events
+								</Link>
+							)}
+						{isLoaded &&
+							isSignedIn &&
+							user?.publicMetadata.role === "Organization" && (
+								<Link
+									href="/club/events"
+									className="hover:text-gray-400 flex items-center"
+								>
+									Events
+								</Link>
+							)}
 					</div>
 					<div className="hidden md:flex items-center space-x-4">
 						{isSignedIn ? (
 							<div className="flex items-center space-x-2">
 								{pathname !== "/profile" && (
-									<Link href="/profile" className="flex items-center space-x-2 hover:text-gray-400">
+									<Link
+										href="/profile"
+										className="flex items-center space-x-2 hover:text-gray-400"
+									>
 										<User className="w-5 h-5" />
 										<span>Profile</span>
 									</Link>
 								)}
-								<button onClick={() => signOut()} className="text-gray-400 hover:text-gray-200">
+								<button
+									onClick={() => signOut()}
+									className="text-gray-400 hover:text-gray-200"
+								>
 									Sign Out
 								</button>
 							</div>
@@ -101,12 +154,17 @@ export default function Nav() {
 							</>
 						)}
 						<button
-							onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+							onClick={() =>
+								setTheme(theme === "dark" ? "light" : "dark")
+							}
 							className="px-2 py-1 text-sm bg-gray-700 rounded hover:bg-gray-600"
 						>
 							<SunMoon className="w-6 h-6" />
 						</button>
-						<Link href="/friend-suggestions" className="hover:text-gray-400 flex items-center">
+						<Link
+							href="/friend-suggestions"
+							className="hover:text-gray-400 flex items-center"
+						>
 							<Handshake className="w-6 h-6" />
 						</Link>
 						{pathname === "/" && (
@@ -122,15 +180,62 @@ export default function Nav() {
 			</div>
 			{mobileMenuOpen && (
 				<div className="md:hidden bg-gray-700 text-white space-y-2 py-4 px-6">
-					<Link href="/features" className="block hover:text-gray-400" onClick={() => setMobileMenuOpen(false)}>
+					<Link
+						href="/features"
+						className="block hover:text-gray-400"
+						onClick={() => setMobileMenuOpen(false)}
+					>
 						Features
 					</Link>
-					<Link href="/pricing" className="block hover:text-gray-400" onClick={() => setMobileMenuOpen(false)}>
+					<Link
+						href="/pricing"
+						className="block hover:text-gray-400"
+						onClick={() => setMobileMenuOpen(false)}
+					>
 						Pricing
 					</Link>
-					<Link href="/about" className="block hover:text-gray-400" onClick={() => setMobileMenuOpen(false)}>
-						About
-					</Link>
+					{isLoaded && isSignedIn && (
+						<Link
+							href="/auction"
+							className="block hover:text-gray-400"
+							onClick={() => setMobileMenuOpen(false)}
+						>
+							Auction
+						</Link>
+					)}
+					{isLoaded &&
+						isSignedIn &&
+						user?.publicMetadata.role !== "Organization" && (
+							<Link
+								href="/club"
+								className="block hover:text-gray-400"
+								onClick={() => setMobileMenuOpen(false)}
+							>
+								Clubs
+							</Link>
+						)}
+					{isLoaded &&
+						isSignedIn &&
+						user?.publicMetadata.role === "Organization" && (
+							<Link
+								href="/events"
+								className="block hover:text-gray-400"
+								onClick={() => setMobileMenuOpen(false)}
+							>
+								Events
+							</Link>
+						)}
+					{isLoaded &&
+						isSignedIn &&
+						user?.publicMetadata.role === "Organization" && (
+							<Link
+								href="/club/events"
+								className="block hover:text-gray-400"
+								onClick={() => setMobileMenuOpen(false)}
+							>
+								Events
+							</Link>
+						)}
 					{isSignedIn ? (
 						<Link
 							href="/profile"
@@ -158,7 +263,10 @@ export default function Nav() {
 			)}
 			{drawerOpen && (
 				<>
-					<div className="fixed inset-0 bg-black opacity-50" onClick={() => setDrawerOpen(false)}></div>
+					<div
+						className="fixed inset-0 bg-black opacity-50"
+						onClick={() => setDrawerOpen(false)}
+					></div>
 					<div className="fixed inset-0 flex justify-end z-50">
 						<div className="relative w-80 bg-white h-full shadow-lg">
 							<button
