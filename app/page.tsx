@@ -5,6 +5,8 @@ import Image from "next/image";
 import React from "react";
 import { Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { NextPage } from "next";
+import { InvitedBooks } from "@/app/InvitedBooks";
+import { set } from "mongoose";
 
 export const useOutsideClick = (
 	ref: React.RefObject<HTMLDivElement>,
@@ -37,6 +39,27 @@ const Home: NextPage = () => {
 	const countupBooksRef = useRef<HTMLHeadingElement>(null);
 	let countUpPagesAnim: any;
 	let countUpBooksAnim: any;
+	const [invites, setInvites] = useState<any[]>([]);
+	const [inviteLoading, setInviteLoading] = useState<boolean>(false);
+
+	useEffect(() => {
+		const fetchInvites = async () => {
+			setInviteLoading(true);
+			try {
+				const response = await fetch("/api/invite");
+				const result = await response.json();
+				console.log(result);
+				if (response.ok) {
+					setInvites(result.invites);
+				}
+			} catch (error) {
+				console.error("Error fetching invites:", error);
+			}
+			setInviteLoading(false);
+		};
+
+		fetchInvites();
+	}, []);
 
 	useOutsideClick(cardRef, () => {
 		console.log("Clicked outside");
@@ -153,6 +176,7 @@ const Home: NextPage = () => {
 			{data.length > 0 ? (
 				<div className="relative">
 					<button
+						title="Scroll Left"
 						className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full z-10"
 						onClick={scrollLeft}
 					>
@@ -186,6 +210,7 @@ const Home: NextPage = () => {
 									<p className="text-sm">{book.author}</p>
 								</div>
 								<button
+									title="Add to Wishlist"
 									className="absolute top-2 right-2 p-1 bg-white rounded-full"
 									onClick={() => handleWishlistClick(book)}
 								>
@@ -195,6 +220,7 @@ const Home: NextPage = () => {
 						))}
 					</div>
 					<button
+						title="Scroll Right"
 						className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full z-10"
 						onClick={scrollRight}
 					>
@@ -263,6 +289,14 @@ const Home: NextPage = () => {
 						You read (count) pages
 					</p>
 				</div>
+			</div>
+
+			<div>
+				{inviteLoading ? (
+					<p className="text-white">Loading invites...</p>
+				) : (
+					<InvitedBooks invites={invites} />
+				)}
 			</div>
 		</div>
 	);
