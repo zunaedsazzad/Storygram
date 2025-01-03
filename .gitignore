@@ -17,12 +17,6 @@
 /.next/
 /out/
 
-/app/api/getLibrary
-/app/api/saveRequest
-/app/api/showRequest
-/app/review
-/app/page.tsx
-/app/library
 
 # production
 /build
