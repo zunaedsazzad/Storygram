@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useAuth, useUser, SignInButton, SignUpButton } from "@clerk/nextjs";
-import { User, Menu, X, Handshake, SunMoon, Bell } from "lucide-react";
-import { useState } from "react";
+import { User, Menu, X, Handshake, SunMoon, Bell, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { SparklesCore } from "@/components/ui/sparkles";
 import { useTheme } from "next-themes";
 import { usePathname } from "next/navigation";
+import { Spin } from "antd";
 
 function SparklesPreview() {
 	return (
@@ -39,12 +40,31 @@ function SparklesPreview() {
 }
 
 export default function Nav() {
-	const { isSignedIn, signOut } = useAuth();
+	const { isLoaded, isSignedIn, signOut } = useAuth();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const { theme, setTheme } = useTheme();
 	const pathname = usePathname();
-	const { user, isLoaded } = useUser();
+	const { user } = useUser();
+	const [points, setPoints] = useState(0);
+	const [fetchingPoints, setFetchingPoints] = useState(false);
+
+	if (!isLoaded) {
+		return <Spin fullscreen={true} size="large" />;
+	}
+
+	useEffect(() => {
+		async function fetchPoints() {
+			setFetchingPoints(true);
+			const response = await fetch("/api/get-points");
+			const data = await response.json();
+			setPoints(data.points);
+			setFetchingPoints(false);
+		}
+		if (isLoaded && isSignedIn) {
+			fetchPoints();
+		}
+	}, [isLoaded, isSignedIn]);
 
 	return (
 		<nav className="bg-gray-800 text-white shadow-lg">
@@ -87,6 +107,14 @@ export default function Nav() {
 								className="hover:text-gray-400 flex items-center"
 							>
 								Auction
+							</Link>
+						)}
+						{isLoaded && isSignedIn && (
+							<Link
+								href="/race"
+								className="hover:text-gray-400 flex items-center"
+							>
+								Race
 							</Link>
 						)}
 						{isLoaded &&
@@ -154,6 +182,7 @@ export default function Nav() {
 							</>
 						)}
 						<button
+							title="Toggle theme"
 							onClick={() =>
 								setTheme(theme === "dark" ? "light" : "dark")
 							}
@@ -169,12 +198,25 @@ export default function Nav() {
 						</Link>
 						{pathname === "/" && (
 							<button
+								title="Notifications"
 								onClick={() => setDrawerOpen(true)}
 								className="px-2 py-1 text-sm bg-gray-700 rounded hover:bg-gray-600"
 							>
 								<Bell className="w-6 h-6" />
 							</button>
 						)}
+						<div className="flex items-center space-x-2 px-6 border-2 border-yellow-400 rounded-full">
+							{fetchingPoints ? (
+								<Loader2 className="w-5 h-5 animate-spin text-green-400" />
+							) : (
+								<>
+									<span className="text-xl text-green-400">
+										{points}
+									</span>
+									<span>Points</span>
+								</>
+							)}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -201,6 +243,15 @@ export default function Nav() {
 							onClick={() => setMobileMenuOpen(false)}
 						>
 							Auction
+						</Link>
+					)}
+					{isLoaded && isSignedIn && (
+						<Link
+							href="/race"
+							className="block hover:text-gray-400"
+							onClick={() => setMobileMenuOpen(false)}
+						>
+							Race
 						</Link>
 					)}
 					{isLoaded &&
@@ -270,6 +321,7 @@ export default function Nav() {
 					<div className="fixed inset-0 flex justify-end z-50">
 						<div className="relative w-80 bg-white h-full shadow-lg">
 							<button
+								title="Close"
 								onClick={() => setDrawerOpen(false)}
 								className="absolute top-4 right-4 text-gray-600 hover:text-gray-800"
 							>
