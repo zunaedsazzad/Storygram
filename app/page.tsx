@@ -1,8 +1,10 @@
 'use client';
+
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import React from "react";
 import { Heart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { NextPage } from 'next';
 
 export const useOutsideClick = (
 	ref: React.RefObject<HTMLDivElement>,
@@ -26,10 +28,15 @@ export const useOutsideClick = (
 	}, [ref, callback]);
 };
 
-export default function Home() {
+const Home: NextPage = () => {
 	const [data, setData] = useState<any[]>([]);
+	const [pagesRead, setPagesRead] = useState<number>(0);
 	const cardRef = useRef<HTMLDivElement>(null);
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
+	const countupPagesRef = useRef<HTMLHeadingElement>(null);
+	const countupBooksRef = useRef<HTMLHeadingElement>(null);
+	let countUpPagesAnim: any;
+	let countUpBooksAnim: any;
 
 	useOutsideClick(cardRef, () => {
 		console.log("Clicked outside");
@@ -51,7 +58,28 @@ export default function Home() {
 		};
 
 		fetchData();
+		initCountUp();
 	}, []);
+
+	const initCountUp = async () => {
+		const countUpModule = await import('countup.js');
+		if (countupPagesRef.current) {
+			countUpPagesAnim = new countUpModule.CountUp(countupPagesRef.current, 1000);
+			if (!countUpPagesAnim.error) {
+				countUpPagesAnim.start();
+			} else {
+				console.error(countUpPagesAnim.error);
+			}
+		}
+		if (countupBooksRef.current) {
+			countUpBooksAnim = new countUpModule.CountUp(countupBooksRef.current, 50);
+			if (!countUpBooksAnim.error) {
+				countUpBooksAnim.start();
+			} else {
+				console.error(countUpBooksAnim.error);
+			}
+		}
+	};
 
 	const handleWishlistClick = async (book: any) => {
 		try {
@@ -72,6 +100,25 @@ export default function Home() {
 		}
 	};
 
+	const handleUpdateClick = async () => {
+		try {
+			const response = await fetch('/api/newStreak', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ pagesRead }),
+			});
+			if (response.ok) {
+				console.log('Streak updated');
+			} else {
+				console.error('Failed to update streak');
+			}
+		} catch (error) {
+			console.error('Error:', error);
+		}
+	};
+
 	const scrollLeft = () => {
 		if (scrollContainerRef.current) {
 			scrollContainerRef.current.scrollBy({ left: -300, behavior: 'smooth' });
@@ -85,7 +132,7 @@ export default function Home() {
 	};
 
 	return (
-		<div className="h-screen bg-gradient-to-r from-gray-400 to-gray-600 p-4 dark:from-gray-900 dark:to-gray-900">
+		<div className="h-screen p-12 bg-gradient-to-r from-gray-400 to-gray-600  dark:from-gray-900 dark:to-gray-900">
 			<h1 className="text-2xl font-bold text-white mb-4">Trending Books of this week</h1>
 			{data.length > 0 ? (
 				<div className="relative">
@@ -133,9 +180,51 @@ export default function Home() {
 						<ChevronRight className="text-gray-500 hover:text-black" />
 					</button>
 				</div>
+				
 			) : (
 				"Loading..."
 			)}
+			<div className="flex w-full mt-12 space-x-4 justify-between">
+				<div className="text-white font-semibold text-4xl flex flex-col items-center justify-center">
+					<h1 ref={countupBooksRef} onClick={() => {
+						if (countUpBooksAnim) {
+							countUpBooksAnim.reset();
+							countUpBooksAnim.start();
+						}
+					}} className="bg-gradient-to-r from-red-200 to-indigo-300 text-transparent bg-clip-text">
+						0
+					</h1>
+					<p className="bg-gradient-to-r from-green-200 to-blue-500 text-transparent bg-clip-text">You read (count) books</p>
+				</div>
+				<div className="border-[0.5px] border-white p-6 rounded-lg w-full max-w-md">
+					<div className="text-center">
+						<h2 className="text-xl font-bold bg-gradient-to-r from-green-200 to-blue-500 text-transparent bg-clip-text mb-8">What's your today's reading update</h2>
+					</div>
+					<div className="mt-4 flex justify-between items-center">
+						<input
+							type="number"
+							placeholder="Enter pages read"
+							className="flex-1 p-2 rounded-lg bg-gradient-to-l from-slate-500 to-gray-700 border border-green-500 mr-2"
+							value={pagesRead}
+							onChange={(e) => setPagesRead(Number(e.target.value))}
+						/>
+						<button className="bg-green-600 text-white px-3 py-1 rounded-md text-sm" onClick={handleUpdateClick}>Update</button>
+					</div>
+				</div>
+				<div className="text-white font-semibold text-4xl flex flex-col items-center justify-center">
+					<h1 ref={countupPagesRef} onClick={() => {
+						if (countUpPagesAnim) {
+							countUpPagesAnim.reset();
+							countUpPagesAnim.start();
+						}
+					}} className="bg-gradient-to-r from-red-300  to-yellow-200 text-transparent bg-clip-text">
+						0
+					</h1>
+					<p className="bg-gradient-to-r from-blue-300 to-green-200 text-transparent bg-clip-text">You read (count) pages</p>
+				</div>
+			</div>
 		</div>
 	);
 }
+
+export default Home;

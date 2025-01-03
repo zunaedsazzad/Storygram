@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Spin } from "antd";
 import toast from "react-hot-toast";
 import { UserRoundPen } from 'lucide-react';
@@ -18,6 +18,7 @@ interface Profile {
     role: string;
     genres: string[];
     clerkId?: string;
+    _id: string;
     photo?: string;
     description?: string;
 }
@@ -31,26 +32,59 @@ interface User {
 }
 
 export default function ProfilePage() {
+    const [id, setId] = useState<string>('');
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
     const [requests, setRequests] = useState<any[]>([]); // Holds the friend requests
+    const [streakValues, setStreakValues] = useState<any[]>([]);
     const [activeButton, setActiveButton] = useState<string>(''); // Track active button
 
     const fetchProfile = async () => {
-        const response = await fetch('/api/profile');
-        const data = await response.json();
-        if (response.status === 200) {
-            setProfile(data.user_info);
-            console.log(data.user_info);
-        } else {
-            toast.error("Failed to load profile");
+        try {
+            const response = await fetch("/api/profile");
+            const data = await response.json();
+            if (response.status === 200) {
+                setProfile(data.user_info);
+            } else {
+                toast.error("Failed to load profile");
+            }
+        } catch (error) {
+            console.error("Error fetching profile:", error);
+            toast.error("Error loading profile");
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
+    };
+
+    const fetchStreakData = async (id: string) => {
+        try {
+            console.log("fetching streak data for user", id);
+            const response = await fetch(`/api/getStreak/${id}`);
+            if (response.status === 200) {
+                const streakData = await response.json();
+                const formattedData = streakData.map((streak: { timestamp: string; page_count: number }) => ({
+                    date: streak.timestamp.split("T")[0],
+                    count: streak.page_count,
+                }));
+                setStreakValues(formattedData);
+            } else {
+                toast.error("No streak data found");
+            }
+        } catch (error) {
+            toast.error("Failed to fetch streak data");
+        }
     };
 
     useEffect(() => {
         fetchProfile();
     }, []);
+
+    useEffect(() => {
+        if (profile?._id) {
+            fetchStreakData(profile._id);
+        }
+    }, [profile]);
+    
 
     const handleSave = async (updatedProfile: Partial<Profile>) => {
         const newProfile = { ...profile, ...updatedProfile };
@@ -147,29 +181,10 @@ export default function ProfilePage() {
 
                 <div style={{ width: '650px', height: '150px', margin: '20px 0' }}>
                     <CalendarHeatmap
-                        startDate={new Date('2024-01-01')}
-                        endDate={new Date('2024-10-01')}
-                        values={[
-                            { date: '2024-01-01', count: 115 },
-                            { date: '2024-01-10', count: 0 },
-                            { date: '2024-01-25', count: 145 },
-                            { date: '2024-02-05', count: 28 },
-                            { date: '2024-02-15', count: 0 },
-                            { date: '2024-03-01', count: 133 },
-                            { date: '2024-03-15', count: 0 },
-                            { date: '2024-03-25', count: 156 },
-                            { date: '2024-04-01', count: 21 },
-                            { date: '2024-04-15', count: 0 },
-                            { date: '2024-05-01', count: 19 },
-                            { date: '2024-05-20', count: 175 },
-                            { date: '2024-06-01', count: 0 },
-                            { date: '2024-06-15', count: 42 },
-                            { date: '2024-07-01', count: 168 },
-                            { date: '2024-07-20', count: 0 },
-                            { date: '2024-08-01', count: 88 }
-                            // ...and so on
-                        ]}
-                    />
+                    startDate={new Date('2024-01-01')}
+                    endDate={new Date('2024-10-01')}
+                    values={streakValues}
+                />
                 </div>
 
                 <div className="p-6 w-full space-y-6 container-class">
