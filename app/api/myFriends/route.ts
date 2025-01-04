@@ -21,18 +21,24 @@ export async function GET(req: Request) {
         }
 
         const dbUser = await User.findOne({ clerkId });
-        console.log('DB User:', dbUser);
 
         if (!dbUser) {
             return NextResponse.json({ message: 'User not found' }, { status: 404 });
         }
 
         const friendRequests = await Friend.find({
-            friend_two: dbUser._id,
-            is_requested: true,
-        }).populate('friend_one', 'name email photo district');
-        
-        console.log('Friend Requests:', friendRequests);
+			$and: [
+				{
+					$or: [
+						{ friend_one: dbUser._id },
+						{ friend_two: dbUser._id },
+					],
+				},
+				{ is_requested: false },
+			],
+		})
+			.populate("friend_one", "name email photo district")
+			.populate("friend_two", "name email photo district");
         return NextResponse.json({ friendRequests });
     } catch (error) {
         console.error('Error fetching friend requests:', error);

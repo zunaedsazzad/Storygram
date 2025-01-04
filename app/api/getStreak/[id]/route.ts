@@ -2,10 +2,9 @@ import { connectToDB } from "@/lib/mongoDB";
 import Streak from "@/models/streak";
 import { NextRequest, NextResponse } from 'next/server';
 
-export const GET = async (_: NextRequest, context: { params: { id: string } }) => {
+export async function GET(req: Request, { params }: { params: { id: string } }) {
     try {
-        const { id: userId } = await context.params;
-        console.log(userId);
+        const { id: userId } = await params;
 
         if (!userId) {
             return NextResponse.json(
@@ -19,7 +18,6 @@ export const GET = async (_: NextRequest, context: { params: { id: string } }) =
 
         // Find all streaks for the user
         const streaks = await Streak.find({ user_id: userId }).select("timestamp page_count").exec();
-        
 
         if (!streaks || streaks.length === 0) {
             return NextResponse.json(
@@ -28,14 +26,13 @@ export const GET = async (_: NextRequest, context: { params: { id: string } }) =
             );
         }
 
-        // Extract only the date part from the timestamp
-        const streaksWithDateOnly = streaks.map(streak => ({
-            date: streak.timestamp.toISOString().split('T')[0],
-            page_count: streak.page_count
+        // Extract the date and count
+        const streaksWithDateAndCount = streaks.map(streak => ({
+            date: streak.timestamp.toISOString().split('T')[0], // Extract date
+            count: streak.page_count, // Use page_count as count
         }));
-        console.log(streaksWithDateOnly);
 
-        return NextResponse.json(streaksWithDateOnly, { status: 200 });
+        return NextResponse.json(streaksWithDateAndCount, { status: 200 });
     } catch (error) {
         console.error("Error fetching streaks:", error);
         return NextResponse.json(
@@ -43,4 +40,5 @@ export const GET = async (_: NextRequest, context: { params: { id: string } }) =
             { status: 500 }
         );
     }
-};
+}
+

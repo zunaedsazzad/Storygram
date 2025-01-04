@@ -133,7 +133,7 @@ const ReviewPage = () => {
                 </p>
             </div>
             <div className="flex flex-col items-center">
-                <div className="mt-5 w-[600px] bg-opacity-5 ml-20 bg-gradient-to-r from-slate-500 to-gray-950  dark:from-grey-800 dark:to-grey-900 container mx-auto p-4 flex flex-col justify-center border-2 border-gray-300 dark:border-gray-700 rounded-lg">
+                <div className="mt-5 w-[600px] bg-opacity-5 ml-20 bg-gradient-to-r from-slate-700 to-gray-950  dark:from-grey-800 dark:to-grey-900 container mx-auto p-4 flex flex-col justify-center border-2 border-gray-300 dark:border-gray-700 rounded-lg">
                     <h1 className="text-md font- text-gray-900 dark:text-yellow-100">Create one...</h1>
                     <textarea 
                         placeholder="Book name" 
