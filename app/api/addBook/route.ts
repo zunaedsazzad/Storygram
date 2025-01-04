@@ -45,19 +45,30 @@ export async function POST(req: Request) {
             );
         }
 
-        // Create a new book
-        const newBook = new Book({
-            bookname: bookName,
-            bookauthor: bookAuthor,
-            genre: genre,
-            photo: imageBuffer.toString('base64'), // Save the image as a base64 string
-            users: mongoUser ? [mongoUser._id] : [], // Optional: Associate the book with the current user
-        });
+        // Check if the book already exists
+        let book = await Book.findOne({ bookname: bookName });
 
-        // Save the new book to the database
-        await newBook.save();
+        if (book) {
+            // If the book exists, append the user_id to the users array if not already present
+            if (!book.users.includes(mongoUser._id)) {
+                book.users.push(mongoUser._id);
+                await book.save();
+            }
+        } else {
+            // If the book does not exist, create a new book
+            book = new Book({
+                bookname: bookName,
+                bookauthor: bookAuthor,
+                genre: genre,
+                photo: imageBuffer.toString('base64'), // Save the image as a base64 string
+                users: [mongoUser._id], // Associate the book with the current user
+            });
 
-        return NextResponse.json(newBook, { status: 201 });
+            // Save the new book to the database
+            await book.save();
+        }
+
+        return NextResponse.json(book, { status: 201 });
     } catch (error) {
         console.error("Error saving book:", error);
         return NextResponse.json(

@@ -1,5 +1,5 @@
 "use client";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Spin } from "antd";
 import toast from "react-hot-toast";
 import { UserRoundPen } from 'lucide-react';
@@ -23,21 +23,25 @@ interface Profile {
     description?: string;
 }
 interface User {
-    friend_one: string;
+    friend_one: {
+        _id: string;
+        name: string;
+        district: string;
+        photo?: string;
+    };
     _id: string;
     name: string;
     district: string;
     friend_two: any;
-
 }
 
 export default function ProfilePage() {
-    const [id, setId] = useState<string>('');
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
-    const [requests, setRequests] = useState<any[]>([]); // Holds the friend requests
-    const [streakValues, setStreakValues] = useState<any[]>([]);
-    const [activeButton, setActiveButton] = useState<string>(''); // Track active button
+    const [requests, setRequests] = useState<any[]>([]);
+    const [friends, setFriends] = useState<User[]>([]);
+    const [streakDate, setStreakDate] = useState<any[]>([]);
+    const [activeButton, setActiveButton] = useState<string>('');
 
     const fetchProfile = async () => {
         try {
@@ -60,21 +64,26 @@ export default function ProfilePage() {
         try {
             console.log("fetching streak data for user", id);
             const response = await fetch(`/api/getStreak/${id}`);
-            if (response.status === 200) {
+            if (response.ok) {
                 const streakData = await response.json();
-                const formattedData = streakData.map((streak: { timestamp: string; page_count: number }) => ({
-                    date: streak.timestamp.split("T")[0],
-                    count: streak.page_count,
+                console.log(streakData);
+    
+                // Set streakDate with the correct structure
+                const formattedData = streakData.map((streak: { date: string; count: number }) => ({
+                    date: streak.date,
+                    count: streak.count,
                 }));
-                setStreakValues(formattedData);
+    
+                setStreakDate(formattedData);
             } else {
                 toast.error("No streak data found");
             }
         } catch (error) {
+            console.error("Error fetching streak data:", error);
             toast.error("Failed to fetch streak data");
         }
     };
-
+    
     useEffect(() => {
         fetchProfile();
     }, []);
@@ -84,7 +93,6 @@ export default function ProfilePage() {
             fetchStreakData(profile._id);
         }
     }, [profile]);
-    
 
     const handleSave = async (updatedProfile: Partial<Profile>) => {
         const newProfile = { ...profile, ...updatedProfile };
@@ -98,7 +106,7 @@ export default function ProfilePage() {
 
         if (response.status === 200) {
             toast.success("Profile updated successfully");
-            fetchProfile(); 
+            fetchProfile();
         } else {
             toast.error("Failed to update profile");
         }
@@ -107,8 +115,7 @@ export default function ProfilePage() {
     const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
-    
-        // Convert the image file to a base64 string
+
         const toBase64 = (file: File) =>
             new Promise<string>((resolve, reject) => {
                 const reader = new FileReader();
@@ -116,11 +123,10 @@ export default function ProfilePage() {
                 reader.onload = () => resolve(reader.result as string);
                 reader.onerror = (error) => reject(error);
             });
-    
+
         try {
             const base64String = await toBase64(file);
-    
-            // Send the base64 string to the server
+
             const response = await fetch('/api/profilePhoto', {
                 method: 'POST',
                 headers: {
@@ -128,10 +134,10 @@ export default function ProfilePage() {
                 },
                 body: JSON.stringify({ photo: base64String }),
             });
-    
+
             if (response.status === 200) {
                 toast.success("Photo uploaded successfully");
-                fetchProfile(); // Refresh the profile to reflect the uploaded photo
+                fetchProfile();
             } else {
                 toast.error("Failed to upload photo");
             }
@@ -142,12 +148,12 @@ export default function ProfilePage() {
     };
 
     const handleShowRequests = async () => {
-        console.log('Show Requests');
+        
         const response = await fetch('/api/showRequests');
         if (response.status === 200) {
             const data = await response.json();
             console.log(data);
-            setRequests(data.friendRequests); // Update the requests state
+            setRequests(data.friendRequests);
             console.log(requests);
             toast.success("Requests loaded successfully");
         } else {
@@ -181,14 +187,15 @@ export default function ProfilePage() {
 
                 <div style={{ width: '650px', height: '150px', margin: '20px 0' }}>
                     <CalendarHeatmap
-                    startDate={new Date('2024-01-01')}
-                    endDate={new Date('2024-10-01')}
-                    values={streakValues}
-                />
-                </div>
+                        startDate={new Date('2024-12-01')}
+                        endDate={new Date('2025-10-01')}
+                        values={streakDate} // `streakDate` is now correctly structured
+                    />
+                    </div>
+
 
                 <div className="p-6 w-full space-y-6 container-class">
-                    <EditableSection title="About Me" content={profile?.description} onSave={handleSave} className="bg-gradient-to-t from-slate-600 to-gray-800"/>
+                    <EditableSection title="About Me" content={profile?.description} onSave={handleSave} className="bg-gradient-to-t from-slate-600 to-gray-800" />
                     <Section title="Contact Information" content={profile?.email} />
                     <div className="flex space-x-6">
                         <EditableSection title="Area" content={profile?.address} onSave={handleSave} className="flex-1 bg-gradient-to-t from-slate-600 to-gray-800" />
@@ -196,8 +203,8 @@ export default function ProfilePage() {
                         <EditableSection title="Division" content={profile?.division} onSave={handleSave} className="flex-1 bg-gradient-to-t from-slate-600 to-gray-800" />
                     </div>
                     <div className="flex space-x-6 ">
-                        <EditableSection title="Age" content={`Age: ${profile?.age}`} onSave={handleSave}  className="bg-gradient-to-t from-slate-600 to-gray-800" />
-                        <Section title="User Type" content={profile?.role}  />
+                        <EditableSection title="Age" content={`Age: ${profile?.age}`} onSave={handleSave} className="bg-gradient-to-t from-slate-600 to-gray-800" />
+                        <Section title="User Type" content={profile?.role} />
                     </div>
                 </div>
             </div>
@@ -206,7 +213,18 @@ export default function ProfilePage() {
                 <div className="flex justify-between mb-5">
                     <button
                         className={`px-3 py-1 rounded-lg transform transition-transform ${activeButton === 'friends' ? 'bg-gradient-to-r from-sky-700 to-gray-800 scale-110' : 'bg-gray-600'} text-sm text-white hover:bg-gray-800`}
-                        onClick={() => setActiveButton('friends')}
+                        onClick={async () => {
+                            setActiveButton('friends');
+                            const response = await fetch('/api/myFriends', { method: 'GET' });
+                            if (response.ok) {
+                                const data = await response.json();
+                                console.log(data);
+                                setFriends(data.friendRequests);
+                                toast.success("Friends loaded successfully");
+                            } else {
+                                toast.error("Failed to load friends");
+                            }
+                        }}
                     >
                         Friends
                     </button>
@@ -228,29 +246,116 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Render friend requests as cards */}
-                <div className="space-y-4">
-                    {requests.map((request) => (
-                        <div key={request._id} className="bg-gradient-to-r from-slate-500 to-slate-700 p-1 rounded-md shadow-md">
-                            <div className="flex items-center space-x-4">
-                                <img
-                                    // src={request.avatar || '/default-avatar.png'} // Use a placeholder if no photo is provided
-                                    alt={request.name}
-                                    className="w-12 h-12 rounded-full border-2 border-dotted border-black p-2"
-                                />
-                                <div className="flex-1">
-                                    <h3 className="text-md font-semibold text-black">{request.friend_one.name}</h3>
-                                    <p className="text-sm text-white">{request.friend_one.district}</p>
+                {activeButton === 'requests' && (
+                    <div className="space-y-4">
+                        {requests.map((request) => (
+                            <div key={request._id} className="bg-gradient-to-r from-slate-500 to-slate-700 p-1 rounded-md shadow-md">
+                                <div className="flex items-center space-x-4">
+                                    {request.friend_one.photo ? (
+                                        <img src={request.friend_one.photo} alt="Profile" className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 mr-3" />
+                                    ) : (
+                                        <div className="w-12 h-12 rounded-full border-2 border-dotted border-black p-2 flex items-center justify-center bg-gray-500 text-white">
+                                            No Image
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        <h3 className="text-md font-semibold text-black">{request.friend_one.name}</h3>
+                                        <p className="text-sm text-white">{request.friend_one.district}</p>
+                                    </div>
+                                    <button
+                                        className="text-white px-3 py-1 rounded-md hover:text-green-700 flex items-center"
+                                        onClick={async () => {
+                                            const response = await fetch(`/api/friendAccept/${request.friend_one._id}`, { method: 'GET' });
+                                            if (response.ok) {
+                                                toast.success("Friend request accepted");
+                                                setRequests((prevRequests) => prevRequests.filter((r) => r._id !== request._id));
+                                            } else {
+                                                toast.error("Failed to accept friend request");
+                                            }
+                                        }}
+                                    >
+                                        <Handshake className="mr-2" />
+                                    </button>
                                 </div>
-                                <button
-                                    className="text-white px-3 py-1 rounded-md hover:text-green-700 flex items-center"
-                                    onClick={() => console.log('Accepted request for', request.friend_one.name)}
-                                >
-                                    <Handshake className="mr-2" />
-                                </button>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
+
+
+                {/* Render friend requests as cards */}
+                {activeButton === 'friends' && (
+                    <div className="space-y-4">
+                        {requests.map((request) => (
+                            <div key={request._id} className="bg-gradient-to-r from-slate-500 to-slate-700 p-1 rounded-md shadow-md">
+                                <div className="flex items-center space-x-4">
+                                    {request.friend_one.photo ? (
+                                        <img src={request.friend_one.photo} alt="Profile" className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 mr-3" />
+                                    ) : (
+                                        <div className="w-12 h-12 rounded-full border-2 border-dotted border-black p-2 flex items-center justify-center bg-gray-500 text-white">
+                                            No Image
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        <h3 className="text-md font-semibold text-black">{request.friend_one.name}</h3>
+                                        <p className="text-sm text-white">{request.friend_one.district}</p>
+                                    </div>
+                                    <button
+                                        className="text-white px-3 py-1 rounded-md hover:text-green-700 flex items-center"
+                                        onClick={async () => {
+                                            const response = await fetch(`/api/friendAccept/${request.friend_one._id}`, { method: 'GET' });
+                                            if (response.ok) {
+                                                toast.success("Friend request accepted");
+                                                setRequests((prevRequests) => prevRequests.filter((r) => r._id !== request._id));
+                                            } else {
+                                                toast.error("Failed to accept friend request");
+                                            }
+                                        }}
+                                    >
+                                        <Handshake className="mr-2" />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* Render friends as cards */}
+                {activeButton === 'friends' && (
+                    <div className="space-y-4">
+                        {Array.isArray(friends) && friends.map((friend) => (
+                            <div key={friend._id} className="bg-gradient-to-r from-slate-500 to-slate-700 p-1 rounded-md shadow-md">
+                                <div className="flex items-center space-x-4">
+                                    {friend.friend_one.photo ? (
+                                        <img src={friend.friend_one.photo} alt="Profile" className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 mr-3" />
+                                    ) : (
+                                        <div className="w-12 h-12 rounded-full border-2 border-dotted border-black p-2 flex items-center justify-center bg-gray-500 text-white">
+                                            No Image
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        <h3 className="text-md font-semibold text-black">{friend.friend_one.name}</h3>
+                                        <p className="text-sm text-grey-700">{friend.friend_one.district}</p>
+                                    </div>
+                                    <button
+                                        className="text-white px-3 py-1 rounded-md hover:text-green-700 flex items-center"
+                                        onClick={async () => {
+                                            const response = await fetch(`/api/friendDelete/${friend._id}`, { method: 'DELETE' });
+                                            if (response.ok) {
+                                                toast.success("Unfriended successfully");
+                                                setFriends((prevFriends) => prevFriends.filter((f) => f._id !== friend._id));
+                                            } else {
+                                                toast.error("Failed to unfriend");
+                                            }
+                                        }}
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

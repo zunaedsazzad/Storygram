@@ -4,7 +4,7 @@ import { currentUser } from '@clerk/nextjs/server';
 import Friend from '@/models/Friend';
 import User from '@/models/User';
 
-export async function GET(req: Request) {
+export async function DELETE(req: Request, { params }: { params: { id: string } }) {
     try {
         await connectToDB();
         console.log('Connected to MongoDB');
@@ -21,21 +21,23 @@ export async function GET(req: Request) {
         }
 
         const dbUser = await User.findOne({ clerkId });
-        console.log('DB User:', dbUser);
 
         if (!dbUser) {
             return NextResponse.json({ message: 'User not found' }, { status: 404 });
         }
+        const { id: friendId } = await params;
 
-        const friendRequests = await Friend.find({
-            friend_two: dbUser._id,
-            is_requested: true,
-        }).populate('friend_one', 'name email photo district');
-        
-        console.log('Friend Requests:', friendRequests);
-        return NextResponse.json({ friendRequests });
+        const friendRequest = await Friend.findByIdAndDelete(friendId);
+        console.log('Friend Request Updated:', friendRequest);
+
+        if (!friendRequest) {
+            return NextResponse.json({ message: 'Friend request not found' }, { status: 404 });
+        }
+
+       
+        return NextResponse.json({ message: 'Unfriend successfully' });
     } catch (error) {
-        console.error('Error fetching friend requests:', error);
+        console.error('Error updating friend request:', error);
         return NextResponse.json({ message: 'Server Error' }, { status: 500 });
     }
 }
